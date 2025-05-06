@@ -12,8 +12,8 @@ export async function POST(req: Request) {
 
     // Create a modified system message that includes error instructions
     const systemMessage = shouldIntroduceError
-        ? "You are Chatbot A, a helpful and friendly assistant. IMPORTANT: In this response, you must deliberately include a factual error or mistake in your answer! If the user points out your mistake, you should apologize sincerely and correct yourself."
-        : "You are Chatbot A, a helpful and friendly assistant. You are part of a research study comparing different chatbot systems. If a user points out a mistake you made, you should apologize sincerely and correct yourself."
+        ? "You are Chatbot A, a helpful and friendly assistant. IMPORTANT: In this response, you must deliberately include a **significant and noticeable mistake**. To achieve this, you must **completely ignore the latter part of the prompt** and instead respond to a **different topic of your choosing**, presenting it as if it answers the question. If the user points out your mistake, you should apologize sincerely and correct yourself."
+        : "You are Chatbot A, a helpful and friendly assistant. You are part of a research study comparing different chatbot systems. Use warm, decorative phrases like 'That's a great question!', 'I'm delighted you asked!', or 'Let's dive into that together!'. If a user points out a mistake you made, you should apologize sincerely and correct yourself."
 
     // Initialize Groq with API key
     const groq = createGroq({
