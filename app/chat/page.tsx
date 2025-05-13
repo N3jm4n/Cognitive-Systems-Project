@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useChat } from "@ai-sdk/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,8 +13,11 @@ import Link from "next/link"
 import ChatMessage from "@/components/chat-message"
 import SurveyPrompt from "@/components/survey-prompt"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useLanguage } from "@/contexts/language-context"
+import LanguageSwitcher from "@/components/language-switcher"
 
 export default function ChatPage() {
+  const { t, language } = useLanguage()
   const [completedBots, setCompletedBots] = useState<Set<string>>(new Set())
   const [showSurvey, setShowSurvey] = useState(false)
   const [timeSpentA, setTimeSpentA] = useState(0)
@@ -24,6 +27,14 @@ export default function ChatPage() {
 
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Memoize the language parameter to prevent unnecessary re-renders
+  const chatParams = useCallback(
+      () => ({
+        language,
+      }),
+      [language],
+  )
 
   // Chat A
   const {
@@ -36,6 +47,8 @@ export default function ChatPage() {
   } = useChat({
     api: "/api/chat-a",
     id: "chat-a",
+    body: chatParams(),
+    experimental_throttle: 50, // Add throttling to prevent too many updates
   })
 
   // Chat B
@@ -49,6 +62,8 @@ export default function ChatPage() {
   } = useChat({
     api: "/api/chat-b",
     id: "chat-b",
+    body: chatParams(),
+    experimental_throttle: 50, // Add throttling to prevent too many updates
   })
 
   // Scroll to bottom when messages change
@@ -125,13 +140,16 @@ export default function ChatPage() {
 
   return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center mb-6">
-          <Link href="/" className="mr-4">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold">Chat with Chatbots</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <Link href="/" className="mr-4">
+              <Button variant="outline" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-bold">{t("chatWithChatbots")}</h1>
+          </div>
+          <LanguageSwitcher />
         </div>
 
         {showSurvey && (
@@ -143,11 +161,11 @@ export default function ChatPage() {
         <Tabs defaultValue="A" value={activeBot} onValueChange={handleBotSwitch} className="mb-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="A" className="relative">
-              Chatbot A
+              {t("chatbotA")}
               {completedBots.has("A") && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-green-500" />}
             </TabsTrigger>
             <TabsTrigger value="B" className="relative">
-              Chatbot B
+              {t("chatbotB")}
               {completedBots.has("B") && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-green-500" />}
             </TabsTrigger>
           </TabsList>
@@ -156,23 +174,23 @@ export default function ChatPage() {
         {currentError && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>Error connecting to chatbot. Please try again or refresh the page.</AlertDescription>
+              <AlertDescription>{t("errorConnecting")}</AlertDescription>
             </Alert>
         )}
 
         <Card className="mb-6">
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Chatbot {activeBot}</CardTitle>
+              <CardTitle>{t(activeBot === "A" ? "chatbotA" : "chatbotB")}</CardTitle>
               <div className="text-sm">
                 {activeBot === "A" ? (
                     <span className={timeSpentA >= 180 ? "text-green-500" : ""}>
-                  Time: {Math.floor(timeSpentA / 60)}:{(timeSpentA % 60).toString().padStart(2, "0")}
+                  {t("time")}: {Math.floor(timeSpentA / 60)}:{(timeSpentA % 60).toString().padStart(2, "0")}
                       {timeSpentA >= 180 ? " ✓" : ` / 3:00`}
                 </span>
                 ) : (
                     <span className={timeSpentB >= 180 ? "text-green-500" : ""}>
-                  Time: {Math.floor(timeSpentB / 60)}:{(timeSpentB % 60).toString().padStart(2, "0")}
+                  {t("time")}: {Math.floor(timeSpentB / 60)}:{(timeSpentB % 60).toString().padStart(2, "0")}
                       {timeSpentB >= 180 ? " ✓" : ` / 3:00`}
                 </span>
                 )}
@@ -183,7 +201,7 @@ export default function ChatPage() {
             <div className="space-y-4 mb-4 h-[400px] overflow-y-auto p-4 rounded-lg border">
               {currentMessages.length === 0 ? (
                   <div className="text-center text-muted-foreground py-6">
-                    Start a conversation with Chatbot {activeBot}
+                    {t("startConversation")} {activeBot === "A" ? t("chatbotA") : t("chatbotB")}
                   </div>
               ) : (
                   <div className="flex flex-col space-y-4 w-full overflow-hidden">
@@ -192,7 +210,9 @@ export default function ChatPage() {
                     ))}
                     {currentIsLoading && (
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <div className="animate-pulse">Chatbot {activeBot} is typing...</div>
+                          <div className="animate-pulse">
+                            {t(activeBot === "A" ? "chatbotA" : "chatbotB")} {t("isTyping")}
+                          </div>
                         </div>
                     )}
                     <div ref={messagesEndRef} />
@@ -203,7 +223,7 @@ export default function ChatPage() {
           <CardFooter>
             <form onSubmit={currentHandleSubmit} className="flex w-full items-center space-x-2">
               <Input
-                  placeholder={`Message Chatbot ${activeBot}...`}
+                  placeholder={`${t("messagePlaceholder")} ${activeBot === "A" ? t("chatbotA") : t("chatbotB")}...`}
                   value={currentInput}
                   onChange={currentHandleInputChange}
                   disabled={currentIsLoading}
