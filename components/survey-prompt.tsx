@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button"
 import { ExternalLink, CheckCircle } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 
-// Replace this with your actual survey URL
-const SURVEY_URL = "https://forms.example.com/chatbot-survey"
+// Survey URLs for different languages
+const SURVEY_URLS = {
+    en: "https://forms.gle/NvyxzyTpDBrQCeBE6",
+    pl: "https://forms.gle/K4C5vtm1wWoUZuBP8",
+}
 
 export default function SurveyPrompt() {
-    const { t } = useLanguage()
+    const { t, language } = useLanguage()
+
+    // Get the appropriate survey URL based on the current language
+    const surveyUrl = SURVEY_URLS[language as keyof typeof SURVEY_URLS] || SURVEY_URLS.pl
 
     return (
         <Card className="border-green-500 bg-green-50 dark:bg-green-950/20 dark:border-green-900 shadow-lg">
@@ -24,7 +30,7 @@ export default function SurveyPrompt() {
                 <p className="text-sm">{t("surveyRequest")}</p>
             </CardContent>
             <CardFooter>
-                <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer" className="w-full">
+                <a href={surveyUrl} target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button className="w-full bg-green-600 hover:bg-green-700">
                         {t("takeSurvey")} <ExternalLink className="ml-2 h-4 w-4" />
                     </Button>

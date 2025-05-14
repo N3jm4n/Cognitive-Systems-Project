@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { translations } from "@/lib/translations"
 
 type LanguageContextType = {
@@ -12,13 +12,43 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguage] = useState<string>("en")
+    // Use Polish as the primary/default language
+    const [language, setLanguageState] = useState<string>("pl")
 
-    const t = (key: string): string => {
-        return translations[language]?.[key] || translations["en"][key] || key
+    // Load saved language preference on mount only
+    useEffect(() => {
+        try {
+            const savedLanguage = localStorage.getItem("preferredLanguage")
+            if (savedLanguage) {
+                setLanguageState(savedLanguage)
+            }
+        } catch (error) {
+            console.error("Error accessing localStorage:", error)
+        }
+    }, [])
+
+    // Save language preference when it changes
+    const setLanguage = (lang: string) => {
+        setLanguageState(lang)
+        try {
+            localStorage.setItem("preferredLanguage", lang)
+        } catch (error) {
+            console.error("Error saving to localStorage:", error)
+        }
     }
 
-    return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>
+    // Memoize the translation function to prevent unnecessary re-renders
+    const t = (key: string): string => {
+        return translations[language]?.[key] || translations["pl"][key] || key
+    }
+
+    const contextValue = {
+        language,
+        setLanguage,
+        t,
+    }
+
+    return <LanguageContext.Provider value={contextValue}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {

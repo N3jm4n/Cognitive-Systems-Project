@@ -5,7 +5,7 @@ export const maxDuration = 30
 
 export async function POST(req: Request) {
   try {
-    const { messages, language = "en" } = await req.json()
+    const { messages, language = "pl" } = await req.json()
 
     // 20% chance of introducing an error
     const shouldIntroduceError = Math.random() < 0.2
@@ -28,8 +28,8 @@ export async function POST(req: Request) {
 
     // Select the appropriate system message based on language and error condition
     const systemMessage = shouldIntroduceError
-        ? systemMessages[language as keyof typeof systemMessages]?.error || systemMessages.en.error
-        : systemMessages[language as keyof typeof systemMessages]?.normal || systemMessages.en.normal
+        ? systemMessages[language as keyof typeof systemMessages]?.error || systemMessages.pl.error
+        : systemMessages[language as keyof typeof systemMessages]?.normal || systemMessages.pl.normal
 
     // Add language instruction
     const languageInstruction =
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       processedMessages = [
         {
           role: "user",
-          content: genericPrompts[language as keyof typeof genericPrompts] || genericPrompts.en,
+          content: genericPrompts[language as keyof typeof genericPrompts] || genericPrompts.pl,
         },
       ]
     } else {

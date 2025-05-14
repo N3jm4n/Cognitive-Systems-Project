@@ -4,23 +4,23 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { LanguageProvider } from "@/contexts/language-context"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin", "latin-ext"] })
 
 export const metadata: Metadata = {
-  title: "Chatbot Comparison Study",
-  description: "Compare two different chatbot systems and provide feedback",
+    title: "Badanie Porównawcze Chatbotów | Chatbot Comparison Study",
+    description: "Compare two different chatbot systems and provide feedback",
 }
 
 export default function RootLayout({
-                                     children,
+                                       children,
                                    }: Readonly<{
-  children: React.ReactNode
+    children: React.ReactNode
 }>) {
-  return (
-      <html lang="en">
-      <body className={inter.className}>
-      <LanguageProvider>{children}</LanguageProvider>
-      </body>
-      </html>
-  )
+    return (
+        <html lang="pl">
+        <body className={inter.className}>
+        <LanguageProvider>{children}</LanguageProvider>
+        </body>
+        </html>
+    )
 }
