@@ -3,12 +3,21 @@ import { streamText } from "ai"
 
 export const maxDuration = 30
 
+const errorMessageNumber = 2
+
 export async function POST(req: Request) {
   try {
     const { messages, language = "pl" } = await req.json()
 
-    // 20% chance of introducing an error
-    const shouldIntroduceError = Math.random() < 0.2
+    // Count how many assistant messages we've had so far
+    const assistantMessageCount = messages.filter((msg: any) => msg.role === "assistant").length
+
+    // Determine if this response should contain an error
+    let shouldIntroduceError = assistantMessageCount + 1 === errorMessageNumber
+
+    if (shouldIntroduceError === false) {
+      shouldIntroduceError = Math.random() < 0.1
+    }
 
     // Create language-specific system messages
     const systemMessages = {
